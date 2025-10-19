@@ -40,7 +40,7 @@ public interface Command {
             return "";
         }, new CommandDescription("exit", "Exits the application", "exit"));
         registerCommand("help", (args) -> {
-            return Registry.commandRegistry().keyStream().reduce("Available Commands:", (s1,s2) -> s1+"\n"+s2);
+            return Registry.commandRegistry().keyStream().reduce("Available Commands:", (s1,s2) -> s1+"\n"+Registry.commandDescriptionRegistry().get(s2).toString());
         }, new CommandDescription("help", "Displays this help message", "help"));
         // Add admin
         registerCommand("add-admin", (args) -> {
