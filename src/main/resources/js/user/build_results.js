@@ -1,3 +1,5 @@
+let settings;
+
 function getGrade(progress) {
   if (progress >= 0.85) return 1;
   if (progress >= 0.70) return 2;
@@ -9,13 +11,14 @@ function getGrade(progress) {
 
 function getGradeLabel(grade) {
   return [
+    "",
     "1 (Sehr gut)",
     "2 (Gut)",
     "3 (Befriedigend)",
     "4 (Ausreichend)",
     "5 (Mangelhaft)",
     "6 (Ungenügend)"
-  ][grade - 1];
+  ][grade];
 }
 
 function getTaskColorClass(level) {
@@ -100,13 +103,15 @@ function createBarChart(subject, subjectName, studentData) {
   const predicted = studentData.predictedProgress && studentData.predictedProgress[subjectName]
     ? studentData.predictedProgress[subjectName].predictedProgress : 0;
 
-  const grade = getGrade(progress);
+  const grade = settings.show_current_grade.value ? getGrade(progress) : 0;
   const predictedGrade = getGrade(predicted);
 
-  const gradeInfo = document.createElement('div');
-  gradeInfo.className = 'grade-current';
-  gradeInfo.innerHTML = `<strong>Aktuelle Note:</strong> ${getGradeLabel(grade)} (${Math.round(progress * 100)}%)`;
-  chart.appendChild(gradeInfo);
+  if (!settings || settings.show_current_progress.value) {
+    const gradeInfo = document.createElement('div');
+    gradeInfo.className = 'grade-current';
+    gradeInfo.innerHTML = `<strong>Aktueller Fortschritt:</strong> ${getGradeLabel(grade)} (${Math.round(progress * 100)}%)`;
+    chart.appendChild(gradeInfo);
+  }
 
   const predInfo = document.createElement('div');
   predInfo.className = 'grade-prediction';
@@ -120,6 +125,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Load student data (reuse endpoint from dashboard)
   const res = await fetch('/mydata');
   const studentData = await res.json();
+  const settingsRes = await fetch('/get-module', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key: 'result_view' })
+      });
+  settings = (await settingsRes.json()).settings;
 
   document.getElementById('student-name').textContent = `${studentData.firstName} ${studentData.lastName}`;
 
