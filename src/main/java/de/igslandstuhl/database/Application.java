@@ -7,6 +7,7 @@ import java.util.List;
 import de.igslandstuhl.database.api.SerializationException;
 import de.igslandstuhl.database.api.Subject;
 import de.igslandstuhl.database.api.Topic;
+import de.igslandstuhl.database.api.modules.WebModule;
 import de.igslandstuhl.database.holidays.Holiday;
 import de.igslandstuhl.database.server.Server;
 import de.igslandstuhl.database.server.commands.Command;
@@ -96,6 +97,7 @@ public final class Application {
 
         Holiday.setupCurrentSchoolYear();
         PostRequestHandler.registerHandlers();
+        WebModule.registerModules();
 
         if (getInstance().runsWebServer()) {
             Server.getInstance().getWebServer().start();
