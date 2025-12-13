@@ -77,8 +77,14 @@ async function fetchAllSubjects() {
 async function fetchStudentData(studentId) {
     getJsonWithPost('/student-data', { studentId });
 }
+async function fetchMyData() {
+    return await fetchJson('/mydata');
+}
 async function fetchCurrentTopic(subjectId, studentId) {
     return await getJsonWithPost('/current-topic', { subjectId, studentId });
+}
+async function fetchMyCurrentTopic(subjectId) {
+    return await getJsonWithPost('/current-topic', { subjectId });
 }
 async function fetchTopicList(subjectId, grade) {
     return await getJsonWithPost('/topic-list', { subjectId, grade });
@@ -95,6 +101,9 @@ async function getStudentsBySubject(classId, subjectId) {
 }
 async function getStudentsByRoom(room) {
     return await getJsonWithPost('/get-students-by-room', { room });
+}
+async function searchPartner(subjectId, topicId, classId, studentId) {
+    return await getJsonWithPost('/search-partner', { subjectId, topicId, classId, studentId});
 }
 function viewStudent(studentId) {
     // Add studentId to session storage
@@ -201,6 +210,24 @@ async function populateRoomStudentList(room) {
       `;
       studentTable.appendChild(row);
   });
+}
+async function populatePartnerSubjectStudentList(subjectId, studentData) {
+    const topicId = (await fetchMyCurrentTopic(subjectId)).id;
+    const classId = studentData.schoolClass.id;
+    const studentId = studentData.id;
+
+    const students = await searchPartner(subjectId, topicId, classId, studentId);
+
+    const studentTable = document.getElementById("studentTableBody");
+    studentTable.innerHTML = ""; // clear previous rows
+    students.forEach(student => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td class="student-name">${student.name}</td>
+          <td class="student-room">${student.room}</td>
+        `;
+        studentTable.appendChild(row);
+    });
 }
 async function populateTopicTable(table, subjectId, grade) {
     const table = document.querySelector("#topicTable tbody");
@@ -733,5 +760,43 @@ function decodeEntities(str) {
     const txt = document.createElement("textarea");
     txt.innerHTML = str;
     return txt.value;
+}
+function loadStudentDashboard(studentData, subjects) { // Show student info
+    setStudentInfo(studentData);
+
+    // Show rooms
+    populateRoomSelectWithLevel('room', studentData.graduationLevel);
+
+    // Wait for the browser to render (next tick)
+    setTimeout(() => {
+        // Set room select value to current room
+        if (studentData.currentRoom && studentData.currentRoom.label) {
+            roomSelect.value = studentData.currentRoom.label;
+        }
+    }, 0);
+
+    roomSelect.addEventListener('change', async () => updateRoom(studentId, roomSelect.value));
+
+    // Show subjects
+    const subjectList = document.getElementById('subject-list');
+    subjects.forEach(subject => {
+        const panel = createSubjectPanel(subject, studentData);
+        subjectList.appendChild(panel);
+    });
+}
+async function loadStudentResultView(studentData) {
+
+    document.getElementById('student-name').textContent = `${studentData.firstName} ${studentData.lastName}`;
+
+    // Get all subjects from progress keys
+    const subjectNames = Object.keys(studentData.currentProgress || {});
+    // If you have subject objects, map them here; else, use names as fallback
+    // For demo: create fake subject objects
+    const subjects = subjectNames.map(name => ({ id: name, name }));
+
+    const charts = document.getElementById('charts');
+    subjects.forEach(subject => {
+        charts.appendChild(createBarChart(subject, subject.name, studentData));
+    });
 }
 const graduationLevels = ["Neustarter", "Starter", "Durchstarter", "Lernprofi"];
