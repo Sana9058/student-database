@@ -3,8 +3,10 @@ package de.igslandstuhl.database.server.webserver;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.IOException;
 import java.sql.SQLException;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -17,6 +19,11 @@ public class AccessManagerTest {
     private User student;
     private User admin;
     private User anonymous;
+
+    @BeforeAll
+    public static void setup() throws IOException {
+        WebPath.registerPaths();
+    }
 
     @BeforeEach
     public void setupUsers() {

@@ -14,6 +14,7 @@ public record WebPath(RequestType type, String handlerType, List<String> namespa
         Registry.webPathRegistry().register(path, new WebPath(type, handlerType, namespaces, context, accessLevel));
     }
     public static void registerPaths() throws IOException {
+        if (Registry.webPathRegistry().stream().count() > 0) return; // already registered
         ResourceLocation metaLocation = new ResourceLocation("meta", "paths", "get_paths.json");
         Map<String, ?> pathData = ResourceHelper.readJsonResourceAsMap(metaLocation);
         pathData.keySet().forEach((path) -> {

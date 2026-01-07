@@ -44,6 +44,7 @@ public class GetRequestHandler {
     }
 
     public final void registerHandlers() {
+        if (Registry.getRequestHandlerRegistry().stream().count() > 0) return; // already registered
         List<String> getPaths = Registry.webPathRegistry().keyStream().filter((p) -> Registry.webPathRegistry().get(p).type() == RequestType.GET).toList();
         for (String path : getPaths) {
             WebPath webPath = Registry.webPathRegistry().get(path);
